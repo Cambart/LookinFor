@@ -187,6 +187,23 @@
   .overlay.show .success-card { transform: scale(1); }
 
   .success-card svg { width: 180px; height: 180px; }
+  .success-card .victory-gif {
+    width: 260px;
+    height: auto;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    display: block;
+    margin: 0 auto;
+  }
+  /* Hidden YouTube audio player */
+  #ytPlayer {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+    border: 0;
+  }
   .success-card h2 {
     margin: 16px 0 8px;
     font-size: 2rem;
@@ -248,28 +265,14 @@
 
   <div class="overlay" id="overlay">
     <div class="success-card">
-      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="trophyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stop-color="#ffd700"/>
-            <stop offset="100%" stop-color="#ffaa00"/>
-          </linearGradient>
-        </defs>
-        <circle cx="100" cy="100" r="90" fill="rgba(255,255,255,0.15)"/>
-        <path d="M60 50 L140 50 L140 90 Q140 120 100 130 Q60 120 60 90 Z"
-              fill="url(#trophyGrad)" stroke="#fff" stroke-width="3"/>
-        <path d="M60 60 L40 60 Q30 60 30 75 Q30 90 50 95"
-              fill="none" stroke="url(#trophyGrad)" stroke-width="6" stroke-linecap="round"/>
-        <path d="M140 60 L160 60 Q170 60 170 75 Q170 90 150 95"
-              fill="none" stroke="url(#trophyGrad)" stroke-width="6" stroke-linecap="round"/>
-        <rect x="85" y="130" width="30" height="20" fill="url(#trophyGrad)"/>
-        <rect x="70" y="148" width="60" height="10" rx="3" fill="url(#trophyGrad)"/>
-        <text x="100" y="95" text-anchor="middle" font-size="32" font-weight="bold" fill="#fff">★</text>
-      </svg>
+      <img class="victory-gif"
+           src="https://media1.tenor.com/m/z7vnUgjdTGIAAAAd/toothless-dance.gif"
+           alt="Toothless qui danse" />
       <h2>Bravo !</h2>
       <p>Tu as trouvé la combinaison secrète.</p>
       <button id="replay">Recommencer</button>
     </div>
+    <div id="ytWrapper"></div>
   </div>
 
 <script>
@@ -283,6 +286,24 @@
   const overlay = document.getElementById("overlay");
   const resetBtn = document.getElementById("reset");
   const replayBtn = document.getElementById("replay");
+  const ytWrapper = document.getElementById("ytWrapper");
+
+  // YouTube background music
+  const YT_VIDEO_ID = "9MCiixIkzUk";
+
+  function startMusic() {
+    stopMusic();
+    const iframe = document.createElement("iframe");
+    iframe.id = "ytPlayer";
+    iframe.allow = "autoplay";
+    // autoplay=1 + a user gesture (keyboard/click) lets the browser allow sound
+    iframe.src = `https://www.youtube.com/embed/${YT_VIDEO_ID}?autoplay=1&loop=1&playlist=${YT_VIDEO_ID}&controls=0&modestbranding=1`;
+    ytWrapper.appendChild(iframe);
+  }
+
+  function stopMusic() {
+    ytWrapper.innerHTML = "";
+  }
 
   let input = [];
   let locked = false;
@@ -324,6 +345,7 @@
     setTimeout(() => {
       overlay.classList.add("show");
       launchConfetti();
+      startMusic();
     }, 700);
   }
 
@@ -354,6 +376,7 @@
     locked = false;
     input = [];
     overlay.classList.remove("show");
+    stopMusic();
     renderSlots();
   }
 
