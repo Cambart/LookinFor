@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Code Secret — Combinaison de flèches</title>
+<style>
+  :root {
+    --bg-1: #0f0c29;
+    --bg-2: #302b63;
+    --bg-3: #24243e;
+    --accent: #ffd166;
+    --accent-2: #06d6a0;
+    --danger: #ef476f;
+    --slot-bg: rgba(255, 255, 255, 0.08);
+    --slot-border: rgba(255, 255, 255, 0.18);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #fff;
+    background: linear-gradient(135deg, var(--bg-1), var(--bg-2), var(--bg-3));
+    background-size: 400% 400%;
+    animation: bgShift 20s ease infinite;
+    overflow: hidden;
+  }
+
+  @keyframes bgShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  .app {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+  }
+
+  h1 {
+    margin: 0 0 8px;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    letter-spacing: 0.5px;
+  }
+
+  .subtitle {
+    margin: 0 0 32px;
+    opacity: 0.75;
+    font-size: 0.95rem;
+    max-width: 520px;
+    line-height: 1.5;
+  }
+
+  .slots {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .slot {
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+    background: var(--slot-bg);
+    border: 2px solid var(--slot-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .slot.filled {
+    background: rgba(255, 209, 102, 0.15);
+    border-color: var(--accent);
+    transform: scale(1.05);
+  }
+
+  .slot.success {
+    background: rgba(6, 214, 160, 0.2);
+    border-color: var(--accent-2);
+    animation: pop 0.4s ease;
+  }
+
+  @keyframes pop {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.2); }
+    100% { transform: scale(1.05); }
+  }
+
+  .hint {
+    opacity: 0.55;
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+  }
+
+  .keys {
+    display: grid;
+    grid-template-columns: repeat(3, 56px);
+    grid-template-rows: repeat(2, 56px);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .key {
+    background: var(--slot-bg);
+    border: 1px solid var(--slot-border);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    user-select: none;
+    cursor: pointer;
+    transition: transform 0.1s ease, background 0.1s ease;
+  }
+
+  .key:hover { background: rgba(255, 255, 255, 0.14); }
+  .key:active, .key.pressed {
+    transform: scale(0.92);
+    background: rgba(255, 209, 102, 0.25);
+  }
+
+  .key.up    { grid-column: 2; grid-row: 1; }
+  .key.left  { grid-column: 1; grid-row: 2; }
+  .key.down  { grid-column: 2; grid-row: 2; }
+  .key.right { grid-column: 3; grid-row: 2; }
+
+  .reset {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .reset:hover { background: rgba(255, 255, 255, 0.08); }
+
+  .shake { animation: shake 0.4s ease; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-8px); }
+    40%, 80% { transform: translateX(8px); }
+  }
+
+  /* Success overlay */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+    z-index: 10;
+  }
+  .overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .success-card {
+    background: linear-gradient(135deg, #06d6a0, #118ab2);
+    padding: 36px 48px;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    transform: scale(0.7);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .overlay.show .success-card { transform: scale(1); }
+
+  .success-card svg { width: 180px; height: 180px; }
+  .success-card h2 {
+    margin: 16px 0 8px;
+    font-size: 2rem;
+  }
+  .success-card p {
+    margin: 0 0 20px;
+    opacity: 0.9;
+  }
+  .success-card button {
+    background: #fff;
+    color: #118ab2;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .success-card button:hover { transform: translateY(-2px); }
+
+  /* Confetti */
+  .confetti {
+    position: absolute;
+    width: 10px;
+    height: 14px;
+    top: -20px;
+    opacity: 0.9;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to {
+      transform: translateY(110vh) rotate(720deg);
+      opacity: 0;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <h1>Trouve la combinaison secrète</h1>
+    <p class="subtitle">
+      Utilise les <strong>flèches du clavier</strong> (ou clique sur les touches ci-dessous) pour entrer la bonne séquence de 7 mouvements.
+    </p>
+
+    <div class="slots" id="slots"></div>
+
+    <p class="hint">Astuce : la séquence comporte 7 flèches.</p>
+
+    <div class="keys" aria-label="Touches directionnelles">
+      <div class="key up"    data-dir="up">▲</div>
+      <div class="key left"  data-dir="left">◀</div>
+      <div class="key down"  data-dir="down">▼</div>
+      <div class="key right" data-dir="right">▶</div>
+    </div>
+
+    <button class="reset" id="reset">Réinitialiser</button>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="success-card">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="trophyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#ffd700"/>
+            <stop offset="100%" stop-color="#ffaa00"/>
+          </linearGradient>
+        </defs>
+        <circle cx="100" cy="100" r="90" fill="rgba(255,255,255,0.15)"/>
+        <path d="M60 50 L140 50 L140 90 Q140 120 100 130 Q60 120 60 90 Z"
+              fill="url(#trophyGrad)" stroke="#fff" stroke-width="3"/>
+        <path d="M60 60 L40 60 Q30 60 30 75 Q30 90 50 95"
+              fill="none" stroke="url(#trophyGrad)" stroke-width="6" stroke-linecap="round"/>
+        <path d="M140 60 L160 60 Q170 60 170 75 Q170 90 150 95"
+              fill="none" stroke="url(#trophyGrad)" stroke-width="6" stroke-linecap="round"/>
+        <rect x="85" y="130" width="30" height="20" fill="url(#trophyGrad)"/>
+        <rect x="70" y="148" width="60" height="10" rx="3" fill="url(#trophyGrad)"/>
+        <text x="100" y="95" text-anchor="middle" font-size="32" font-weight="bold" fill="#fff">★</text>
+      </svg>
+      <h2>Bravo !</h2>
+      <p>Tu as trouvé la combinaison secrète.</p>
+      <button id="replay">Recommencer</button>
+    </div>
+  </div>
+
+<script>
+  const SECRET = ["up", "left", "right", "left", "right", "down", "down"];
+  const ARROWS = {
+    up: "▲", down: "▼", left: "◀", right: "▶",
+    ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right"
+  };
+
+  const slotsEl = document.getElementById("slots");
+  const overlay = document.getElementById("overlay");
+  const resetBtn = document.getElementById("reset");
+  const replayBtn = document.getElementById("replay");
+
+  let input = [];
+  let locked = false;
+
+  function renderSlots() {
+    slotsEl.innerHTML = "";
+    for (let i = 0; i < SECRET.length; i++) {
+      const slot = document.createElement("div");
+      slot.className = "slot";
+      if (input[i]) {
+        slot.classList.add("filled");
+        slot.textContent = ARROWS[input[i]];
+      }
+      slotsEl.appendChild(slot);
+    }
+  }
+
+  function pressKey(dir) {
+    const keyEl = document.querySelector(`.key[data-dir="${dir}"]`);
+    if (keyEl) {
+      keyEl.classList.add("pressed");
+      setTimeout(() => keyEl.classList.remove("pressed"), 120);
+    }
+  }
+
+  function checkSuccess() {
+    if (input.length !== SECRET.length) return false;
+    return input.every((d, i) => d === SECRET[i]);
+  }
+
+  function triggerSuccess() {
+    locked = true;
+    document.querySelectorAll(".slot").forEach((s, i) => {
+      setTimeout(() => {
+        s.classList.remove("filled");
+        s.classList.add("success");
+      }, i * 80);
+    });
+    setTimeout(() => {
+      overlay.classList.add("show");
+      launchConfetti();
+    }, 700);
+  }
+
+  function triggerFail() {
+    slotsEl.classList.add("shake");
+    setTimeout(() => {
+      slotsEl.classList.remove("shake");
+      input = [];
+      renderSlots();
+    }, 500);
+  }
+
+  function addInput(dir) {
+    if (locked) return;
+    input.push(dir);
+    renderSlots();
+
+    if (input.length === SECRET.length) {
+      if (checkSuccess()) {
+        triggerSuccess();
+      } else {
+        triggerFail();
+      }
+    }
+  }
+
+  function reset() {
+    locked = false;
+    input = [];
+    overlay.classList.remove("show");
+    renderSlots();
+  }
+
+  // Confetti
+  function launchConfetti() {
+    const colors = ["#ffd166", "#06d6a0", "#118ab2", "#ef476f", "#fff"];
+    for (let i = 0; i < 80; i++) {
+      const c = document.createElement("div");
+      c.className = "confetti";
+      c.style.left = Math.random() * 100 + "vw";
+      c.style.background = colors[Math.floor(Math.random() * colors.length)];
+      c.style.animationDuration = (2 + Math.random() * 2) + "s";
+      c.style.animationDelay = Math.random() * 0.5 + "s";
+      c.style.transform = `rotate(${Math.random() * 360}deg)`;
+      overlay.appendChild(c);
+      setTimeout(() => c.remove(), 4500);
+    }
+  }
+
+  // Keyboard
+  document.addEventListener("keydown", (e) => {
+    const dir = ARROWS[e.key];
+    if (!dir) return;
+    e.preventDefault();
+    pressKey(dir);
+    addInput(dir);
+  });
+
+  // Click on virtual keys
+  document.querySelectorAll(".key").forEach(k => {
+    k.addEventListener("click", () => {
+      const dir = k.dataset.dir;
+      pressKey(dir);
+      addInput(dir);
+    });
+  });
+
+  resetBtn.addEventListener("click", reset);
+  replayBtn.addEventListener("click", reset);
+
+  renderSlots();
+</script>
+</body>
+</html>
