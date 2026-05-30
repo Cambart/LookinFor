@@ -187,14 +187,29 @@
   .overlay.show .success-card { transform: scale(1); }
 
   .success-card svg { width: 180px; height: 180px; }
+  .success-card {
+    max-width: 460px;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
   .success-card .victory-gif {
-    width: 260px;
+    display: block;
+    width: auto;
+    max-width: 100%;
     height: auto;
+    max-height: 40vh;
+    object-fit: contain;
     border-radius: 16px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-    display: block;
     margin: 0 auto;
   }
+  .success-card p a {
+    color: #fff;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .success-card p a:hover { opacity: 0.85; }
   /* Hidden YouTube audio player */
   #ytPlayer {
     position: absolute;
@@ -269,7 +284,7 @@
            src="https://media1.tenor.com/m/z7vnUgjdTGIAAAAd/toothless-dance.gif"
            alt="Toothless qui danse" />
       <h2>Bravo !</h2>
-      <p>Tu as trouvé la combinaison secrète.</p>
+      <p>Oh wow... il se pourrait qu'une surprise de type "nourriture" se prépare... Je te conseille de réserver ta petite soirée le <strong>Vendredi 12 juin</strong> ! (il y a ce magnifique lien pour ajouter un rendez vous dans ton agenda, si c'est pa s bô ? : <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&amp;text=Restaurant%20time%20%21%21&amp;dates=20260612T193000/20260612T213000&amp;ctz=Europe/Paris" target="_blank" rel="noopener">Là ici</a>)</p>
       <button id="replay">Recommencer</button>
     </div>
     <div id="ytWrapper"></div>
